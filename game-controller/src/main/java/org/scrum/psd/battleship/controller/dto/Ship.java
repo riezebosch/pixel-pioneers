@@ -43,6 +43,11 @@ public class Ship {
 
         positions.add(new Position(letter, number));
     }
+    //check if all positions of the schip in list of hitPositions
+    public boolean isSunk(List<Position> hitPositions) {
+        return positions.stream().allMatch(hitPositions::contains);
+    }
+
 
     // TODO: property change listener implementieren
 

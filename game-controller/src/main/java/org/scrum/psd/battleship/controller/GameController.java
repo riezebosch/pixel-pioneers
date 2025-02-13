@@ -1,9 +1,6 @@
 package org.scrum.psd.battleship.controller;
 
-import org.scrum.psd.battleship.controller.dto.Color;
-import org.scrum.psd.battleship.controller.dto.Letter;
-import org.scrum.psd.battleship.controller.dto.Position;
-import org.scrum.psd.battleship.controller.dto.Ship;
+import org.scrum.psd.battleship.controller.dto.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 public class GameController {
-    public static boolean checkIsHit(Collection<Ship> ships, Position shot) {
+    public static boolean checkIsHit(Collection<Ship> ships, Position shot, BattleTracker battleTracker, List<Position> hitPositions) {
         if (ships == null) {
             throw new IllegalArgumentException("ships is null");
         }
@@ -23,13 +20,21 @@ public class GameController {
         for (Ship ship : ships) {
             for (Position position : ship.getPositions()) {
                 if (position.equals(shot)) {
+                    hitPositions.add(shot); // Voeg de hit toe aan de lijst
+                    System.out.println("Hit!");
+
+                    // Controleer of het schip gezonken is
+                    battleTracker.checkAndMarkSunkShip(ship, hitPositions);
+
                     return true;
                 }
             }
         }
 
+        System.out.println("Miss!");
         return false;
     }
+
 
     public static List<Ship> initializeShips() {
         return Arrays.asList(

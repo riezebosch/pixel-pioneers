@@ -1,6 +1,7 @@
 package org.scrum.psd.battleship.ascii;
 
 import org.scrum.psd.battleship.controller.GameController;
+import org.scrum.psd.battleship.controller.dto.BattleTracker;
 import org.scrum.psd.battleship.controller.dto.Letter;
 import org.scrum.psd.battleship.controller.dto.Position;
 import org.scrum.psd.battleship.controller.dto.Ship;
@@ -58,7 +59,9 @@ public class Main {
             System.out.println("Player, it's your turn");
             System.out.println("Enter coordinates for your shot :");
             Position position = parsePosition(scanner.next());
-            boolean isHit = GameController.checkIsHit(enemyFleet, position);
+            BattleTracker battleTracker = new BattleTracker();
+            List<Position> hitPositions = new ArrayList<>();
+            boolean isHit = GameController.checkIsHit(enemyFleet, position, battleTracker, hitPositions);
             if (isHit) {
                 beep();
 
@@ -76,7 +79,7 @@ public class Main {
             telemetry.trackEvent("Player_ShootPosition", "Position", position.toString(), "IsHit", Boolean.valueOf(isHit).toString());
 
             position = getRandomPosition();
-            isHit = GameController.checkIsHit(myFleet, position);
+            isHit = GameController.checkIsHit(myFleet, position, battleTracker, hitPositions);
             System.out.println("");
             System.out.println(String.format("Computer shoot in %s%s and %s", position.getColumn(), position.getRow(), isHit ? "hit your ship !" : "miss"));
             telemetry.trackEvent("Computer_ShootPosition", "Position", position.toString(), "IsHit", Boolean.valueOf(isHit).toString());
