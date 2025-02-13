@@ -77,5 +77,4 @@ public class GameControllerTest {
 
         Assert.assertTrue(result);
     }
-
 }

@@ -64,6 +64,13 @@ public class Main {
             System.out.println(colorize("Player, it's your turn", BOLD()));
             System.out.println(colorize("Enter coordinates for your shot (Eg A3):", WHITE_TEXT()));
             Position position = parsePosition(scanner.next());
+
+            if (position == null) {
+                System.out.println(colorize("Your input did not match a valid position", BLACK_BACK(), BRIGHT_RED_TEXT()));
+                System.out.println();
+                continue;
+            }
+
             boolean isHit = GameController.checkIsHit(enemyFleet, position);
             if (isHit) {
                 printExplosion();
@@ -91,9 +98,23 @@ public class Main {
     }
 
     protected static Position parsePosition(String input) {
-        Letter letter = Letter.valueOf(input.toUpperCase().substring(0, 1));
-        int number = Integer.parseInt(input.substring(1));
-        return new Position(letter, number);
+        Letter letter = Letter.fromInput(input.substring(0, 1));
+
+        if (letter == null) {
+            return null;
+        }
+
+        try {
+            int number = Integer.parseInt(input.substring(1));
+
+            if (number < 1 || number > 8) {
+                return null;
+            }
+
+            return new Position(letter, number);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private static void printExplosion() {
@@ -138,11 +159,23 @@ public class Main {
             System.out.println("");
             System.out.println(String.format("Please enter the positions for the %s (size: %s)", shipNameColourised, ship.getSize()));
             for (int i = 1; i <= ship.getSize(); i++) {
-                System.out.println(colorize(String.format("Enter position %s of %s (i.e A3):", i, ship.getSize()), WHITE_TEXT()));
 
-                String positionInput = scanner.next();
-                ship.addPosition(positionInput);
-                telemetry.trackEvent("Player_PlaceShipPosition", "Position", positionInput, "Ship", ship.getName(), "PositionInShip", Integer.valueOf(i).toString());
+                Position positionParsed = null;
+
+                while (positionParsed == null) {
+                    System.out.println(colorize(String.format("Enter position %s of %s (i.e A3):", i, ship.getSize()), WHITE_TEXT()));
+
+                    String positionInput = scanner.next();
+                    positionParsed = parsePosition(positionInput);
+
+                    if (positionParsed == null) {
+                        System.out.println(colorize("Your input did not match a valid position", BLACK_BACK(), BRIGHT_RED_TEXT()));
+                        System.out.println();
+                    }
+                }
+
+                ship.addPosition(positionParsed);
+                telemetry.trackEvent("Player_PlaceShipPosition", "Position", positionParsed.toString(), "Ship", ship.getName(), "PositionInShip", Integer.valueOf(i).toString());
             }
         }
     }

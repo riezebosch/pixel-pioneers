@@ -33,6 +33,7 @@ public class Ship {
         this.color = color;
     }
 
+    @Deprecated
     public void addPosition(String input) {
         if (positions == null) {
             positions = new ArrayList<>();
@@ -42,6 +43,14 @@ public class Ship {
         int number = Integer.parseInt(input.substring(1));
 
         positions.add(new Position(letter, number));
+    }
+
+    public void addPosition(Position position) {
+        if (positions == null) {
+            positions = new ArrayList<>();
+        }
+
+        positions.add(position);
     }
 
     // TODO: property change listener implementieren
