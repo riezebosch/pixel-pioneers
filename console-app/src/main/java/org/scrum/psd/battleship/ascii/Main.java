@@ -1,11 +1,14 @@
 package org.scrum.psd.battleship.ascii;
 
+import com.diogonunes.jcolor.Attribute;
 import org.scrum.psd.battleship.controller.GameController;
+import org.scrum.psd.battleship.controller.dto.Color;
 import org.scrum.psd.battleship.controller.dto.Letter;
 import org.scrum.psd.battleship.controller.dto.Position;
 import org.scrum.psd.battleship.controller.dto.Ship;
 
 import java.util.*;
+import java.util.List;
 
 import static com.diogonunes.jcolor.Ansi.colorize;
 import static com.diogonunes.jcolor.Attribute.*;
@@ -40,6 +43,9 @@ public class Main {
 
     private static void StartGame() {
         Scanner scanner = new Scanner(System.in);
+        System.out.println();
+        System.out.println(colorize("========================================================================", WHITE_BACK(), BLACK_TEXT()));
+        System.out.println();
 
         System.out.print("\033[2J\033[;H");
         System.out.println("                  __");
@@ -55,44 +61,28 @@ public class Main {
 
         do {
             System.out.println("");
-            System.out.println("Player, it's your turn");
-            System.out.println("Enter coordinates for your shot :");
+            System.out.println(colorize("Player, it's your turn", BOLD()));
+            System.out.println(colorize("Enter coordinates for your shot (Eg A3):", WHITE_TEXT()));
             Position position = parsePosition(scanner.next());
             boolean isHit = GameController.checkIsHit(enemyFleet, position);
             if (isHit) {
-                beep();
-
-                System.out.println("                \\         .  ./");
-                System.out.println("              \\      .:\" \";'.:..\" \"   /");
-                System.out.println("                  (M^^.^~~:.'\" \").");
-                System.out.println("            -   (/  .    . . \\ \\)  -");
-                System.out.println("               ((| :. ~ ^  :. .|))");
-                System.out.println("            -   (\\- |  \\ /  |  /)  -");
-                System.out.println("                 -\\  \\     /  /-");
-                System.out.println("                   \\  \\   /  /");
+                printExplosion();
             }
 
-            System.out.println(isHit ? "Yeah ! Nice hit !" : "Miss");
+            System.out.println(isHit ? colorize("Yeah ! Nice hit !", YELLOW_TEXT()) : colorize("Miss", BLUE_TEXT()));
             telemetry.trackEvent("Player_ShootPosition", "Position", position.toString(), "IsHit", Boolean.valueOf(isHit).toString());
 
             position = getRandomPosition();
             isHit = GameController.checkIsHit(myFleet, position);
-            System.out.println("");
-            System.out.println(String.format("Computer shoot in %s%s and %s", position.getColumn(), position.getRow(), isHit ? "hit your ship !" : "miss"));
-            telemetry.trackEvent("Computer_ShootPosition", "Position", position.toString(), "IsHit", Boolean.valueOf(isHit).toString());
+            String computerHitText = isHit ? colorize("hit your ship !", YELLOW_TEXT()) : colorize("misses", BLUE_TEXT());
+
             if (isHit) {
-                beep();
-
-                System.out.println("                \\         .  ./");
-                System.out.println("              \\      .:\" \";'.:..\" \"   /");
-                System.out.println("                  (M^^.^~~:.'\" \").");
-                System.out.println("            -   (/  .    . . \\ \\)  -");
-                System.out.println("               ((| :. ~ ^  :. .|))");
-                System.out.println("            -   (\\- |  \\ /  |  /)  -");
-                System.out.println("                 -\\  \\     /  /-");
-                System.out.println("                   \\  \\   /  /");
-
+                printExplosion();
             }
+
+            System.out.println("");
+            System.out.println(String.format("Computer shoots in %s%s and %s", position.getColumn(), position.getRow(), computerHitText));
+            telemetry.trackEvent("Computer_ShootPosition", "Position", position.toString(), "IsHit", Boolean.valueOf(isHit).toString());
         } while (true);
     }
 
@@ -104,6 +94,19 @@ public class Main {
         Letter letter = Letter.valueOf(input.toUpperCase().substring(0, 1));
         int number = Integer.parseInt(input.substring(1));
         return new Position(letter, number);
+    }
+
+    private static void printExplosion() {
+        beep();
+
+        System.out.println(colorize("                \\         .  ./", BRIGHT_RED_TEXT()));
+        System.out.println(colorize("              \\      .:\" \";'.:..\" \"   /", BRIGHT_RED_TEXT()));
+        System.out.println(colorize("                  (M^^.^~~:.'\" \").", BRIGHT_RED_TEXT()));
+        System.out.println(colorize("            -   (/  .    . . \\ \\)  -", BRIGHT_RED_TEXT()));
+        System.out.println(colorize("               ((| :. ~ ^  :. .|))", BRIGHT_RED_TEXT()));
+        System.out.println(colorize("            -   (\\- |  \\ /  |  /)  -", BRIGHT_RED_TEXT()));
+        System.out.println(colorize("                 -\\  \\     /  /-", BRIGHT_RED_TEXT()));
+        System.out.println(colorize("                   \\  \\   /  /", BRIGHT_RED_TEXT()));
     }
 
     private static Position getRandomPosition() {
@@ -126,13 +129,16 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         myFleet = GameController.initializeShips();
 
-        System.out.println("Please position your fleet (Game board has size from A to H and 1 to 8) :");
+        System.out.println();
+        System.out.println(colorize("========================================================================", WHITE_BACK(), BLACK_TEXT()));
+        System.out.println(colorize("Please position your fleets (Game board has size from A to H and 1 to 8) :", BOLD(), BRIGHT_WHITE_BACK(), BRIGHT_BLACK_TEXT()));
 
         for (Ship ship : myFleet) {
+            String shipNameColourised = colorize(ship.getName(), fromDtoColor(ship.getColor()));
             System.out.println("");
-            System.out.println(String.format("Please enter the positions for the %s (size: %s)", ship.getName(), ship.getSize()));
+            System.out.println(String.format("Please enter the positions for the %s (size: %s)", shipNameColourised, ship.getSize()));
             for (int i = 1; i <= ship.getSize(); i++) {
-                System.out.println(String.format("Enter position %s of %s (i.e A3):", i, ship.getSize()));
+                System.out.println(colorize(String.format("Enter position %s of %s (i.e A3):", i, ship.getSize()), WHITE_TEXT()));
 
                 String positionInput = scanner.next();
                 ship.addPosition(positionInput);
@@ -165,5 +171,22 @@ public class Main {
 
         enemyFleet.get(4).getPositions().add(new Position(Letter.C, 5));
         enemyFleet.get(4).getPositions().add(new Position(Letter.C, 6));
+    }
+
+    private static Attribute fromDtoColor(Color color) {
+        switch(color) {
+            case CADET_BLUE:
+                return BRIGHT_BLUE_TEXT();
+            case CHARTREUSE:
+                return BRIGHT_WHITE_TEXT();
+            case ORANGE:
+                return YELLOW_TEXT();
+            case RED:
+                return RED_TEXT();
+            case YELLOW:
+                return BRIGHT_YELLOW_TEXT();
+            default:
+                throw new RuntimeException("Nani the fuck");
+        }
     }
 }
